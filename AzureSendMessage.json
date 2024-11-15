@@ -1,0 +1,93 @@
+{
+  "info": {
+    "_postman_id": "fa98424d-f49f-4612-975b-eb49bb225fce",
+    "name": "New Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "AzureSendMessage",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "const sharedKeyName = \"\";\r",
+              "const sharedKey = \"\";\r",
+              "const uri = \"\";\r",
+              "\r",
+              "function createSharedAccessToken(uri, saName, saKey) {\r",
+              "    if (!uri || !saName || !saKey) { \r",
+              "        throw \"Missing required parameter\"; \r",
+              "    } \r",
+              "    var encoded = encodeURIComponent(uri); \r",
+              "    var now = new Date(); \r",
+              "    var week = 60 * 60 * 24 * 7;\r",
+              "    var ttl = Math.round(now.getTime() / 1000) + week;\r",
+              "    var signature = encoded + '\\n' + ttl;\r",
+              "    const hash = CryptoJS.HmacSHA256(signature, saKey).toString(CryptoJS.enc.Base64);\r",
+              "    return 'SharedAccessSignature sr=' + encoded + '&sig=' + encodeURIComponent(hash) + '&se=' + ttl + '&skn=' + saName; \r",
+              "}\r",
+              "\r",
+              "const accessToken = createSharedAccessToken(uri, sharedKeyName, sharedKey);\r",
+              "pm.variables.set('access_token', accessToken);\r",
+              "\r",
+              "var requestBody = pm.request.body.raw;\r",
+              "var jsonData = JSON.parse(requestBody);\r",
+              "\r",
+              "// \"EventName\" değerini almak\r",
+              "var eventName = jsonData.EventName;\r",
+              "console.log(eventName);\r",
+              "const brokerProperties = {\r",
+              "    'Label': eventName\r",
+              "};\r",
+              "pm.variables.set(\"broker_properties\", JSON.stringify(brokerProperties));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "protocolProfileBehavior": {
+        "disabledSystemHeaders": {}
+      },
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "{{access_token}}",
+            "type": "default"
+          },
+          {
+            "key": "BrokerProperties",
+            "value": "{{broker_properties}}",
+            "type": "default"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{request body}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://arma-service-bus.servicebus.windows.net/general_topic/messages",
+          "protocol": "https",
+          "host": ["arma-service-bus", "servicebus", "windows", "net"],
+          "path": ["general_topic", "messages"],
+          "query": [
+            {
+              "key": "",
+              "value": null,
+              "disabled": true
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
